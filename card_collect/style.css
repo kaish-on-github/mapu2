@@ -1,0 +1,543 @@
+/* ==========================================
+   台灣廟宇集章圖鑑 — style.css
+   ========================================== */
+
+/* === Reset & Base === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --red: #B22222;
+  --red-dark: #8B0000;
+  --gold: #C8960C;
+  --gold-light: rgba(200, 150, 12, 0.12);
+  --gold-border: rgba(200, 150, 12, 0.35);
+  --paper: #FAF3E0;
+  --ink: #2C1810;
+  --border-light: rgba(139, 90, 43, 0.2);
+  --border-mid: rgba(139, 90, 43, 0.45);
+  --bg: #F7F0E3;
+  --card-bg: #FFFDF6;
+  --text-primary: #2C1810;
+  --text-secondary: #6B4E3D;
+  --text-muted: #9C7B6B;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Noto Serif TC', serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* === Header === */
+.site-header {
+  background: var(--red);
+  padding: 1.25rem 1rem 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.header-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.site-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.1em;
+}
+
+.site-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  margin-top: 2px;
+  letter-spacing: 0.05em;
+}
+
+/* === Main Layout === */
+.app {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+}
+
+/* === Progress === */
+.progress-section {
+  margin-bottom: 1.25rem;
+}
+
+.progress-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.progress-label strong {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.progress-bar-wrap {
+  background: rgba(139, 90, 43, 0.12);
+  border-radius: 99px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--red);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* === Tabs === */
+.tabs {
+  display: flex;
+  border-bottom: 1.5px solid var(--border-mid);
+  margin-bottom: 1.25rem;
+}
+
+.tab {
+  padding: 9px 20px;
+  font-size: 14px;
+  font-family: 'Noto Serif TC', serif;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+  transition: color 0.2s;
+  letter-spacing: 0.05em;
+}
+
+.tab.active {
+  color: var(--red);
+  border-bottom-color: var(--red);
+  font-weight: 700;
+}
+
+.tab:hover:not(.active) {
+  color: var(--text-primary);
+}
+
+/* === Sections === */
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+/* === Stamp Grid === */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+/* === Stamp Card === */
+.stamp-card {
+  background: var(--card-bg);
+  border: 0.5px solid var(--border-light);
+  border-radius: 12px;
+  padding: 14px 10px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+
+.stamp-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-mid);
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.1);
+}
+
+.stamp-card.is-collected {
+  border-color: var(--gold-border);
+  background: linear-gradient(135deg, #FFFDF6 60%, rgba(200,150,12,0.05));
+}
+
+.stamp-img-wrap {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 10px;
+  border: 2px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5ede0;
+}
+
+.stamp-img-wrap.collected {
+  border-color: var(--gold-border);
+  background: var(--gold-light);
+}
+
+.stamp-img-wrap.locked {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+.stamp-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fallback emoji placeholder */
+.stamp-emoji {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.stamp-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-collected {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badge-locked {
+  background: rgba(139,90,43,0.1);
+  color: var(--text-muted);
+}
+
+.stamp-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+  line-height: 1.4;
+}
+
+.stamp-city {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* === GPS Panel === */
+.gps-panel {
+  background: var(--card-bg);
+  border: 0.5px solid var(--border-light);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.gps-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #aaa;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.status-dot.active {
+  background: #28a745;
+  animation: pulse 1.5s infinite;
+}
+
+.status-dot.error {
+  background: #dc3545;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+.status-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.coord-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.coord-box {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 0.5px solid var(--border-light);
+}
+
+.coord-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.coord-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+}
+
+.check-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: 'Noto Serif TC', serif;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.check-btn:hover {
+  background: var(--red-dark);
+}
+
+.check-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.nearest {
+  margin-top: 1rem;
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: 8px;
+  border: 0.5px solid var(--border-light);
+}
+
+.nearest-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.nearest-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.nearest-dist {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.result-banner {
+  margin-top: 1rem;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.result-success {
+  background: #d4edda;
+  color: #155724;
+  border: 0.5px solid #c3e6cb;
+}
+
+.result-fail {
+  background: #fff3cd;
+  color: #856404;
+  border: 0.5px solid #ffeeba;
+}
+
+.result-already {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 0.5px solid #bee5eb;
+}
+
+/* === Empty State === */
+.empty-hint {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.empty-icon {
+  display: block;
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+/* === Modal === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  padding: 1rem;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+  border: 0.5px solid var(--border-mid);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.modal-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 2px solid var(--border-light);
+  margin: 0 auto 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5ede0;
+  font-size: 42px;
+}
+
+.modal-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.modal-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.modal-period {
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.modal-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  text-align: left;
+  margin-bottom: 16px;
+  max-height: 120px;
+  overflow-y: auto;
+  border-top: 0.5px solid var(--border-light);
+  padding-top: 10px;
+}
+
+.modal-status {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.modal-status.collected {
+  color: #155724;
+}
+
+.modal-status.not-collected {
+  color: #856404;
+}
+
+.modal-close {
+  border: 0.5px solid var(--border-mid);
+  background: transparent;
+  border-radius: 8px;
+  padding: 9px 28px;
+  cursor: pointer;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: background 0.15s;
+}
+
+.modal-close:hover {
+  background: rgba(139, 90, 43, 0.07);
+}
+
+/* === Responsive === */
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+  }
+
+  .tab {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+
+  .site-title {
+    font-size: 17px;
+  }
+}
