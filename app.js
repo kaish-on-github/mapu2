@@ -1,13 +1,11 @@
 /**
  * app.js — 集章圖鑑主程式（Firebase 版）
- * 打卡記錄存 Firestore，不再用 localStorage
+ * 功能：分類篩選、過去/現在圖片切換、GPS打卡、Firestore記錄
  */
 
-const STORAGE_KEY = 'temple_stamps_collected'; // 保留備用，實際不用
-
-// collected 和 saveCollected 由 firebase.js 注入
-// 這裡給預設值避免載入競爭問題
 if (!window.collected) window.collected = new Set();
+
+let currentFilter = 'all'; // 'all' | '官社' | '縣社' | '鄉社'
 
 /* ==========================================
    工具函式
@@ -35,14 +33,30 @@ function findNearest(lat, lng) {
 
 function buildImgHTML(spot, locked) {
   const lockClass = locked ? 'locked' : 'collected';
-  if (spot.image) {
-    return `<div class="stamp-img-wrap ${lockClass}">
-               <img src="${spot.image}" alt="${spot.name}的章" loading="lazy" />
-             </div>`;
-  }
   return `<div class="stamp-img-wrap ${lockClass}">
-             <span class="stamp-emoji" aria-hidden="true">${spot.emoji}</span>
-           </div>`;
+    <img src="${spot.imagePast}" alt="${spot.name}" loading="lazy"
+         onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\'stamp-emoji\\'>${spot.emoji}</span>'" />
+  </div>`;
+}
+
+/* ==========================================
+   分類篩選
+   ========================================== */
+
+function setFilter(filter) {
+  currentFilter = filter;
+
+  // 更新按鈕狀態
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === filter);
+  });
+
+  renderGallery();
+}
+
+function getFilteredSpots() {
+  if (currentFilter === 'all') return SPOTS;
+  return SPOTS.filter(s => s.category === currentFilter);
 }
 
 /* ==========================================
@@ -54,7 +68,16 @@ function renderGallery() {
   if (!grid) return;
   grid.innerHTML = '';
 
-  for (const spot of SPOTS) {
+  const spots = getFilteredSpots();
+
+  if (spots.length === 0) {
+    grid.innerHTML = `<div class="empty-hint" style="grid-column:1/-1">
+      <span class="empty-icon">🔍</span><p>此分類沒有資料</p>
+    </div>`;
+    return;
+  }
+
+  for (const spot of spots) {
     const ok = window.collected.has(spot.id);
     const card = document.createElement('div');
     card.className = `stamp-card${ok ? ' is-collected' : ''}`;
@@ -65,6 +88,7 @@ function renderGallery() {
       <div class="stamp-badge ${ok ? 'badge-collected' : 'badge-locked'}" aria-hidden="true">
         ${ok ? '✓' : '🔒'}
       </div>
+      <div class="stamp-category-tag">${spot.category}</div>
       ${buildImgHTML(spot, !ok)}
       <div class="stamp-name">${spot.name}</div>
       <div class="stamp-city">${spot.city}</div>
@@ -103,6 +127,7 @@ function renderCollected() {
     card.setAttribute('role', 'button');
     card.setAttribute('tabindex', '0');
     card.innerHTML = `
+      <div class="stamp-category-tag">${spot.category}</div>
       ${buildImgHTML(spot, false)}
       <div class="stamp-name">${spot.name}</div>
       <div class="stamp-city">${spot.city}</div>
@@ -201,7 +226,6 @@ async function processCheckIn(lat, lng) {
       banner.textContent = '你已經集過「' + spot.name + '」的章囉！';
     } else {
       window.collected.add(spot.id);
-      // 存到 Firestore
       if (window.saveCollected) await window.saveCollected();
       renderGallery();
       banner.className = 'result-banner result-success';
@@ -220,34 +244,65 @@ function showGpsError(msg) {
 }
 
 /* ==========================================
-   Modal
+   Modal（含過去/現在圖片切換）
    ========================================== */
 
+let currentModalSpot = null;
+let currentPhotoMode = 'past'; // 'past' | 'now'
+
 function openModal(spot) {
+  currentModalSpot = spot;
+  currentPhotoMode = 'past';
+
   const ok = window.collected.has(spot.id);
 
-  const imgEl = document.getElementById('modal-img');
-  if (spot.image) {
-    imgEl.innerHTML = `<img src="${spot.image}" alt="${spot.name}的章" style="${ok ? '' : 'filter:grayscale(1);opacity:.5'}" />`;
-  } else {
-    imgEl.innerHTML = `<span aria-hidden="true">${spot.emoji}</span>`;
-  }
-
   document.getElementById('modal-title').textContent = spot.name;
-  document.getElementById('modal-sub').textContent =
-    spot.city + '｜打卡半徑 ' + spot.radius + ' 公尺';
+  document.getElementById('modal-new-name').textContent = spot.new_name ? `現名：${spot.new_name}` : '';
+  document.getElementById('modal-sub').textContent = spot.city + '　' + spot.category + '｜打卡半徑 ' + spot.radius + ' 公尺';
   document.getElementById('modal-period').textContent = spot.period ? '📅 ' + spot.period : '';
+  document.getElementById('modal-desc').textContent = spot.description || '';
 
   const statusEl = document.getElementById('modal-status');
   statusEl.textContent = ok ? '✓ 已集章' : '尚未集章';
   statusEl.className = 'modal-status ' + (ok ? 'collected' : 'not-collected');
 
-  document.getElementById('modal-desc').textContent = spot.description || '';
+  // 圖片切換按鈕：只有已集章才能看現在圖片
+  const photoTabs = document.getElementById('modal-photo-tabs');
+  photoTabs.style.display = ok ? 'flex' : 'none';
+
+  // 預設顯示過去圖片
+  showModalPhoto('past');
+
   document.getElementById('modal').classList.add('open');
+}
+
+function showModalPhoto(mode) {
+  if (!currentModalSpot) return;
+  currentPhotoMode = mode;
+
+  const spot = currentModalSpot;
+  const ok = window.collected.has(spot.id);
+  const src = mode === 'past' ? spot.imagePast : spot.imageNow;
+  const label = mode === 'past' ? spot.name : (spot.new_name || spot.name);
+
+  const imgEl = document.getElementById('modal-img');
+  imgEl.innerHTML = `
+    <img src="${src}" alt="${label}"
+         style="${(!ok) ? 'filter:grayscale(1);opacity:.5' : ''}"
+         onerror="this.parentElement.innerHTML='<span style=\\'font-size:42px\\'>${spot.emoji}</span>'" />
+  `;
+
+  document.getElementById('modal-photo-label').textContent = mode === 'past' ? `過去・${spot.name}` : `現在・${label}`;
+
+  // 更新按鈕 active 狀態
+  document.querySelectorAll('.photo-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
 }
 
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
+  currentModalSpot = null;
 }
 
 function closeModalOverlay(e) {

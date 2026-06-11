@@ -30,6 +30,7 @@ function parseCSV(text) {
     const address = get('地址');
     const cityMatch = address.match(/^(.{2,3}[縣市])/);
     const city = cityMatch ? cityMatch[1] : address.slice(0, 3);
+    const category = getCategoryById(id);
 
     return {
       id,
@@ -37,8 +38,11 @@ function parseCSV(text) {
       name:        get('名稱'),
       new_name:    get('新名稱'),
       city,
+      category,
       emoji:       '⛩️',
-      image:       `images/${id}1.jpeg`,
+      image:       `images/${id}1.jpeg`,   // 預設顯示過去圖
+      imagePast:   `images/${id}1.jpeg`,   // 過去
+      imageNow:    `images/${id}2.jpeg`,   // 現在
       lat:         parseFloat(get('緯度')),
       lng:         parseFloat(get('經度')),
       radius:      50,

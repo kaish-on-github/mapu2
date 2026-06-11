@@ -6,14 +6,14 @@
   <title>台灣廟宇集章圖鑑</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="card.css" />
 </head>
 <body>
 
   <header class="site-header">
     <div class="header-inner">
-      <a href="index.html" class="back-btn" aria-label="返回廟宇地圖">← 地圖</a>
+      <a href="index.html" class="back-btn">← 地圖</a>
       <div class="header-icon" aria-hidden="true">⛩️</div>
       <div>
         <h1 class="site-title">台灣廟宇集章圖鑑</h1>
@@ -46,7 +46,7 @@
     </div>
 
     <!-- 進度條 -->
-    <section class="progress-section" aria-label="集章進度">
+    <section class="progress-section">
       <p class="progress-label">已集章 <strong id="prog-count">0</strong> / <span id="prog-total">0</span></p>
       <div class="progress-bar-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" id="prog-bar-aria">
         <div class="progress-bar" id="prog-bar"></div>
@@ -54,19 +54,28 @@
     </section>
 
     <!-- 分頁 -->
-    <nav class="tabs" aria-label="分頁">
+    <nav class="tabs">
       <button class="tab active" data-tab="gallery" onclick="switchTab('gallery')">圖鑑</button>
       <button class="tab" data-tab="gps" onclick="switchTab('gps')">GPS 打卡</button>
       <button class="tab" data-tab="collected" onclick="switchTab('collected')">已集章</button>
     </nav>
 
     <!-- 圖鑑頁 -->
-    <section id="tab-gallery" class="section active" aria-label="所有章">
+    <section id="tab-gallery" class="section active">
+
+      <!-- 分類篩選列 -->
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">全部</button>
+        <button class="filter-btn" data-filter="官社" onclick="setFilter('官社')">🏯 官社</button>
+        <button class="filter-btn" data-filter="縣社" onclick="setFilter('縣社')">⛩ 縣社</button>
+        <button class="filter-btn" data-filter="鄉社" onclick="setFilter('鄉社')">🏮 鄉社</button>
+      </div>
+
       <div class="grid" id="gallery-grid"></div>
     </section>
 
     <!-- GPS 打卡頁 -->
-    <section id="tab-gps" class="section" aria-label="GPS打卡">
+    <section id="tab-gps" class="section">
       <div class="gps-panel">
         <div class="gps-status">
           <div class="status-dot" id="status-dot"></div>
@@ -95,21 +104,30 @@
     </section>
 
     <!-- 已集章頁 -->
-    <section id="tab-collected" class="section" aria-label="已集章">
+    <section id="tab-collected" class="section">
       <div class="grid" id="collected-grid"></div>
       <div id="collected-empty" class="empty-hint" style="display:none">
-        <span class="empty-icon" aria-hidden="true">🗺️</span>
+        <span class="empty-icon">🗺️</span>
         <p>尚未集到任何章，趕快出發吧！</p>
       </div>
     </section>
 
   </main>
 
-  <!-- 詳細資訊 Modal -->
-  <div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="closeModalOverlay(event)">
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal" onclick="closeModalOverlay(event)">
     <div class="modal">
       <div class="modal-img" id="modal-img"></div>
+      <div class="modal-photo-label" id="modal-photo-label"></div>
+
+      <!-- 過去/現在切換（已集章才顯示） -->
+      <div class="modal-photo-tabs" id="modal-photo-tabs" style="display:none">
+        <button class="photo-tab-btn active" data-mode="past" onclick="showModalPhoto('past')">過去</button>
+        <button class="photo-tab-btn" data-mode="now" onclick="showModalPhoto('now')">現在</button>
+      </div>
+
       <div class="modal-title" id="modal-title"></div>
+      <div class="modal-new-name" id="modal-new-name"></div>
       <div class="modal-sub" id="modal-sub"></div>
       <div class="modal-period" id="modal-period"></div>
       <div class="modal-status" id="modal-status"></div>
@@ -118,7 +136,6 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
   <script type="module" src="firebase.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
