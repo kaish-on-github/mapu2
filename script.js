@@ -53,11 +53,11 @@ function getCategoryById(id) {
     return "鄉社";
   }
 
-  if (id >= 109 && id <= 112) {
+  if ((id >= 109 && id <= 112) || id == 301) {
     return "官社";
   }
 
-  if (id >= 301 && id <= 312) {
+  if (id >= 302 && id <= 312) {
     return "縣社";
   }
 
