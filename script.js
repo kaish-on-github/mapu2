@@ -94,7 +94,7 @@ function renderMap(targetPlaces) {
           </button>
         </div>
       `, {
-        autoPan: false
+        autoPan: true
       });
 
     markers.push(marker);
