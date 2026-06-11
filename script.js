@@ -2,6 +2,10 @@
 let places = []; 
 let markers = []; 
 
+// 設定外部 Wiki 的網域名稱 (目前先用佔位符，決定平台後可修改此處，例如 "https://zh.wikipedia.org/wiki")
+const WIKI_DOMAIN = "https://your-wiki-domain.com";
+
+// 初始化 Leaflet 地圖，中心點預設在臺北
 const map = L.map("map").setView([25.0173, 121.5397], 15);
 
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -12,11 +16,9 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 const xiangCount = document.getElementById("xiangCount");
 const guanCount = document.getElementById("guanCount");
 const xianCount = document.getElementById("xianCount");
-
 const showXiang = document.getElementById("showXiang");
 const showGuan = document.getElementById("showGuan");
 const showXian = document.getElementById("showXian");
-
 const viewAll = document.getElementById("viewAll");
 
 // 讀取 CSV

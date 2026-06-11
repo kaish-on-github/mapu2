@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>廟宇模擬器</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- 頂部裝飾紋路 -->
+  <div class="top-border-pattern"></div>
+
+  <header class="site-header">
+    <div class="header-ornament">✦</div>
+    <h1>臺灣廟宇模擬器</h1>
+    <div class="header-subtitle-line">
+      <span class="line-deco"></span>
+      <span class="subtitle-text">穿越時光・尋訪神祇</span>
+      <span class="line-deco"></span>
+    </div>
+    <p class="header-desc">來看看不同的年份裡，我們有哪些廟宇吧～　可選年份範圍：1895 ~ 2026</p>
+  </header>
+
+  <div class="audio_wrapper">
+    <div class="audio-label">🎵 廟宇主題音樂</div>
+    <audio controls loop>
+      <source src="templeMusic.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <div class="controls_wrapper">
+    <div id="controls">
+      <div class="controls-inner">
+        <div class="year-control-row">
+          <label class="year-label">查找年份</label>
+          <input type="range" id="yearSlider" min="1895" max="2026" value="2026">
+          <span id="yearText" class="year-display">2026</span>
+          <input type="number" id="yearInput" min="1895" max="2026" value="2026">
+        </div>
+        <div class="count-row">
+          <div class="count-chip shrine"><span class="count-icon">⛩</span><span id="sirCount">神社：0</span></div>
+          <div class="count-chip jingu"><span class="count-icon">🏯</span><span id="gongCount">教堂：0</span></div>
+          <div class="count-chip temple"><span class="count-icon">🏮</span><span id="meowCount">寺廟：0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="button_wrapper">
+    <button id="viewAll">
+      <span class="btn-icon">⊕</span> 顯示全部廟宇
+    </button>
+    <a href="card.html" class="nav-btn">
+      <span class="btn-icon">🎴</span> 集點卡
+    </a>
+  </div>
+
+  <div class="map-frame">
+    <div id="map"></div>
+  </div>
+
+  <!-- 底部裝飾 -->
+  <div class="footer-pattern"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

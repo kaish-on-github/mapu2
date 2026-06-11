@@ -284,6 +284,7 @@ audio {
 .button_wrapper {
   display: flex;
   justify-content: center;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
@@ -323,6 +324,31 @@ audio {
 
 .btn-icon {
   font-size: 16px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 28px;
+  font-size: 14px;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 600;
+  letter-spacing: 3px;
+  background: var(--cream);
+  color: var(--red-dark);
+  border: 1.5px solid var(--gold-deep);
+  border-radius: 30px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 3px 14px rgba(144, 46, 34, 0.15);
+}
+
+.nav-btn:hover {
+  background: var(--gold-light);
+  color: var(--red-mid);
+  box-shadow: 0 5px 20px rgba(144, 46, 34, 0.25);
 }
 
 /* =====================

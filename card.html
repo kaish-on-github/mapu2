@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>台灣神社集章圖鑑</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="card.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="back-btn" aria-label="返回神社地圖">← 地圖</a>
+      <div class="header-icon" aria-hidden="true">⛩️</div>
+      <div>
+        <h1 class="site-title">台灣神社集章圖鑑</h1>
+        <p class="site-sub">走訪神社，集齊印章</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="app">
+
+    <!-- 進度條 -->
+    <section class="progress-section" aria-label="集章進度">
+      <p class="progress-label">已集章 <strong id="prog-count">0</strong> / <span id="prog-total">13</span></p>
+      <div class="progress-bar-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" id="prog-bar-aria">
+        <div class="progress-bar" id="prog-bar"></div>
+      </div>
+    </section>
+
+    <!-- 分頁 -->
+    <nav class="tabs" aria-label="分頁">
+      <button class="tab active" data-tab="gallery" onclick="switchTab('gallery')">圖鑑</button>
+      <button class="tab" data-tab="gps" onclick="switchTab('gps')">GPS 打卡</button>
+      <button class="tab" data-tab="collected" onclick="switchTab('collected')">已集章</button>
+    </nav>
+
+    <!-- 圖鑑頁 -->
+    <section id="tab-gallery" class="section active" aria-label="所有章">
+      <div class="grid" id="gallery-grid"></div>
+    </section>
+
+    <!-- GPS 打卡頁 -->
+    <section id="tab-gps" class="section" aria-label="GPS打卡">
+      <div class="gps-panel">
+        <div class="gps-status">
+          <div class="status-dot" id="status-dot"></div>
+          <span class="status-text" id="status-text">點擊下方按鈕取得位置</span>
+        </div>
+        <div class="coord-row">
+          <div class="coord-box">
+            <div class="coord-label">緯度</div>
+            <div class="coord-val" id="lat-val">—</div>
+          </div>
+          <div class="coord-box">
+            <div class="coord-label">經度</div>
+            <div class="coord-val" id="lng-val">—</div>
+          </div>
+        </div>
+        <button class="check-btn" id="check-btn" onclick="checkLocation()">
+          📍 取得 GPS 位置並打卡
+        </button>
+        <div id="nearest-box" class="nearest" style="display:none">
+          <div class="nearest-label">最近景點</div>
+          <div class="nearest-name" id="nearest-name">—</div>
+          <div class="nearest-dist" id="nearest-dist">—</div>
+        </div>
+        <div id="result-banner" class="result-banner" style="display:none"></div>
+      </div>
+    </section>
+
+    <!-- 已集章頁 -->
+    <section id="tab-collected" class="section" aria-label="已集章">
+      <div class="grid" id="collected-grid"></div>
+      <div id="collected-empty" class="empty-hint" style="display:none">
+        <span class="empty-icon" aria-hidden="true">🗺️</span>
+        <p>尚未集到任何章，趕快出發吧！</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 詳細資訊 Modal -->
+  <div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="closeModalOverlay(event)">
+    <div class="modal">
+      <div class="modal-img" id="modal-img"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-sub" id="modal-sub"></div>
+      <div class="modal-period" id="modal-period"></div>
+      <div class="modal-status" id="modal-status"></div>
+      <div class="modal-desc" id="modal-desc"></div>
+      <button class="modal-close" onclick="closeModal()">關閉</button>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
