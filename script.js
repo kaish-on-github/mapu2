@@ -85,40 +85,15 @@ function renderMap(targetPlaces) {
     const marker = L.marker([place.lat, place.lng])
       .addTo(map)
       .bindPopup(`
-        <div class="place-popup">
-          <h3>${place.名稱}</h3>
-
-          <div class="photo-tabs">
-            <button onclick="showPhoto('${place.編號}', 'past', '${place.名稱}', '${place.新名稱}')">
-              過去
-            </button>
-            <button onclick="showPhoto('${place.編號}', 'now', '${place.名稱}', '${place.新名稱}')">
-              現在
-            </button>
-          </div>
-
-          <div class="photo-area">
-            <div id="photo-title-${place.編號}" class="photo-title">
-              ${place.名稱}
-            </div>
-
-            <img
-              id="photo-img-${place.編號}"
-              src="images/${place.編號}1.jpg"
-              alt="${place.名稱}"
-              class="popup-photo"
-            >
-          </div>
-
-          <div class="popup-info">
-            <p><strong>地址：</strong>${place.地址 || "暫無資料"}</p>
-            <p><strong>開始年份：</strong>${place.開始年分 || "不詳"}</p>
-            <p><strong>結束年份：</strong>${place.結束年分 || "不詳"}</p>
-            <p><strong>說明：</strong>${place.說明 || "暫無說明"}</p>
-          </div>
+        <div class="mini-popup">
+          <strong>${place.名稱}</strong>
+          <button onclick="openPlaceModalById('${place.編號}')">
+            詳細資訊
+          </button>
         </div>
-
-      `);
+      `, {
+        autoPan: false
+      });
 
     markers.push(marker);
   });
@@ -190,84 +165,84 @@ function showPhoto(id, mode, oldName, newName) {
   const img = document.getElementById(`photo-img-${id}`);
   const title = document.getElementById(`photo-title-${id}`);
   if (mode === "past") {
-    img.src = `images/${id}1.jpg`;
+    img.src = `images/${id}1.jpeg`;
     img.alt = oldName;
     title.textContent = oldName;
   }
 
   if (mode === "now") {
-    img.src = `images/${id}2.jpg`;
+    img.src = `images/${id}2.jpeg`;
     img.alt = newName;
     title.textContent = newName;
   }
 }
 
+const placeModal = document.getElementById("placeModal");
+const closeModal = document.getElementById("closeModal");
+const modalTitle = document.getElementById("modalTitle");
+const modalPhotoTitle = document.getElementById("modalPhotoTitle");
+const modalPhoto = document.getElementById("modalPhoto");
+const modalAddress = document.getElementById("modalAddress");
+const modalStartYear = document.getElementById("modalStartYear");
+const modalEndYear = document.getElementById("modalEndYear");
+const modalDescription = document.getElementById("modalDescription");
+const pastBtn = document.getElementById("pastBtn");
+const nowBtn = document.getElementById("nowBtn");
 
-// 根據後端回傳的資料更新地圖
-/*
-async function updateMap(year) {
-  try {
-    // 向 Python 後端請求特定年份的資料
-    const response = await fetch(`http://127.0.0.1:8000/api/temples?year=${year}`);
-    places = await response.json(); // 取得篩選後的 JSON 陣列
+let currentPlace = null;
 
-    // 1. 清除舊的標記
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
+function openPlaceModal(place) {
+  currentPlace = place;
+  placeModal.classList.remove("hidden");
+  modalAddress.textContent = place.地址 || "暫無資料";
+  modalStartYear.textContent = place.開始年分 || "不詳";
+  modalEndYear.textContent = place.結束年分 || "不詳";
+  modalDescription.textContent = place.說明 || "暫無說明";
+  showModalPhoto("past");
+}
 
-    // 2. 計算各類型數量
-    // 註：若新資料庫無明確的 type 欄位，此處依據名稱包含關鍵字做彈性判斷
-    const xiangTotal = places.filter(p =>
-    `${p.name} ${p.type || ""} ${p.description || ""}`.includes("鄉社")
-    ).length;
-  
-    const xianTotal = places.filter(p =>
-    `${p.name} ${p.type || ""} ${p.description || ""}`.includes("縣社")
-    ).length;
+function showModalPhoto(mode) {
+  if (!currentPlace) return;
+  const id = currentPlace.編號;
+  const oldName = currentPlace.名稱;
+  const newName = currentPlace.新名稱 || currentPlace.名稱;
 
-    xiangCount.textContent = `鄉社：${xiangTotal}`;
+  if (mode === "past") {
+    modalTitle.textContent = oldName;
+    modalPhotoTitle.textContent = oldName;
+    modalPhoto.src = `images/${id}1.jpeg`;
+    modalPhoto.alt = oldName;
+  }
 
-    xianCount.textContent = `縣社：${xianTotal}`;
-  
-    // 3. 在地圖上繪製新標記
-    places.forEach(place => {
-      // 判斷類型文字
-      let typeText = "寺廟";
-      if (place.name.includes("神社")) typeText = "神社";
-      if (place.name.includes("教堂") || place.name.includes("天主堂")) typeText = "教堂";
-
-      const marker = L.marker([place.lat, place.lng])
-        .addTo(map)
-        .bindPopup(`
-          <strong>${place.name}</strong><br>
-          ${place.new_name ? `新名稱：${place.new_name}<br>` : ""}
-          類型：${typeText}<br>
-          地址：${place.address || "暫無資料"}<br>
-          年代：${place.start_year} - ${place.end_year ?? "現在"}<br>
-          說明：${place.description || "無"}
-        `);
-
-      markers.push(marker);
-    });
-
-  } catch (error) {
-    console.error("無法從後端取得資料：", error);
+  if (mode === "now") {
+    modalTitle.textContent = oldName;
+    modalPhotoTitle.textContent = newName;
+    modalPhoto.src = `images/${id}2.jpeg`;
+    modalPhoto.alt = newName;
   }
 }
 
-// 事件監聽
+pastBtn.addEventListener("click", function () {
+  showModalPhoto("past");
+});
 
-viewAll.addEventListener("click", function () {
-  if (markers.length > 0) {
-    const group = L.featureGroup(markers);
-    map.fitBounds(group.getBounds(), {
-      padding: [50, 50]
-    });
+nowBtn.addEventListener("click", function () {
+  showModalPhoto("now");
+});
+
+closeModal.addEventListener("click", function () {
+  placeModal.classList.add("hidden");
+});
+
+placeModal.addEventListener("click", function (event) {
+  if (event.target === placeModal) {
+    placeModal.classList.add("hidden");
   }
 });
 
-// 網頁載入完成後，預設顯示 2026 年
-window.addEventListener("DOMContentLoaded", () => {
-  updateMap(2026);
-});
-*/
+function openPlaceModalById(id) {
+  const place = places.find(place => String(place.編號) === String(id));
+  if (!place) return;
+  openPlaceModal(place);
+  map.closePopup();
+}

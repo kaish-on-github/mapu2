@@ -326,33 +326,95 @@ audio {
 }
 
 /* =====================
-   description
+   before description
    ===================== */
-.place-popup {
-  width: 260px;
+.mini-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   font-family: 'Noto Sans TC', sans-serif;
+  text-align: center;
 }
 
-.place-popup h3 {
-  margin-bottom: 10px;
+.mini-popup strong {
+  color: var(--red-dark);
+  font-family: 'Noto Serif TC', serif;
+}
+
+.mini-popup button {
+  padding: 5px 12px;
+  border: 1px solid var(--gold-deep);
+  border-radius: 999px;
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.mini-popup button:hover {
+  background: var(--gold-light);
+}
+
+/* =====================
+   description
+   ===================== */
+.place-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.place-modal.hidden {
+  display: none;
+}
+
+.modal-card {
+  position: relative;
+  width: 340px;
+  max-height: 82vh;
+  overflow-y: auto;
+  background: var(--cream);
+  border: 2px solid var(--gold-deep);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+  padding: 22px;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  border: none;
+  background: transparent;
+  font-size: 26px;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.modal-card h3 {
   font-family: 'Noto Serif TC', serif;
   color: var(--red-dark);
   text-align: center;
+  margin-bottom: 12px;
+  padding: 0 28px;
 }
 
 .photo-tabs {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .photo-tabs button {
-  padding: 4px 12px;
+  padding: 5px 14px;
   border: 1px solid var(--gold-deep);
   border-radius: 999px;
   background: white;
-  color: var(--ink);
   cursor: pointer;
 }
 
@@ -363,25 +425,25 @@ audio {
 .photo-title {
   text-align: center;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .popup-photo {
   width: 100%;
-  height: 150px;
+  height: 180px;
   object-fit: cover;
   border-radius: 10px;
   border: 1px solid var(--gold-deep);
 }
 
 .popup-info {
-  margin-top: 10px;
-  font-size: 13px;
-  line-height: 1.6;
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 .popup-info p {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 /* =====================

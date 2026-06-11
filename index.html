@@ -69,6 +69,30 @@
     <div id="map"></div>
   </div>
 
+  <div id="placeModal" class="place-modal hidden">
+    <div class="modal-card">
+      <button id="closeModal" class="close-modal">×</button>
+      
+      <h3 id="modalTitle"></h3>
+
+      <div class="photo-tabs">
+        <button id="pastBtn">過去</button>
+        <button id="nowBtn">現在</button>
+      </div>
+
+      <div id="modalPhotoTitle" class="photo-title"></div>
+
+      <img id="modalPhoto" class="popup-photo" src="" alt="">
+
+      <div class="popup-info">
+        <p><strong>地址：</strong><span id="modalAddress"></span></p>
+        <p><strong>開始年份：</strong><span id="modalStartYear"></span></p>
+        <p><strong>結束年份：</strong><span id="modalEndYear"></span></p>
+        <p><strong>說明：</strong><span id="modalDescription"></span></p>
+      </div>
+    </div>
+  </div>
+
   <!-- 底部裝飾 -->
   <div class="footer-pattern"></div>
 
