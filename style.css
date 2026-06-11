@@ -241,6 +241,7 @@ audio {
 /* 數量 chips */
 .count-row {
   display: flex;
+  justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -257,17 +258,17 @@ audio {
   border: 1.5px solid transparent;
 }
 
-.count-chip.shrine {
+.count-chip.guan {
   background: rgba(144, 46, 34, 0.08);
   border-color: rgba(144, 46, 34, 0.2);
   color: var(--red-dark);
 }
-.count-chip.jingu {
+.count-chip.xian {
   background: rgba(196, 164, 107, 0.15);
   border-color: var(--gold-deep);
   color: #7A5C20;
 }
-.count-chip.temple {
+.count-chip.xiang {
   background: rgba(58, 26, 16, 0.06);
   border-color: rgba(58, 26, 16, 0.15);
   color: var(--ink);
@@ -284,6 +285,16 @@ audio {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+}
+
+.count-chip {
+  cursor: pointer;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+
+.count-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(80, 20, 10, 0.15);
 }
 
 #viewAll {
@@ -312,6 +323,65 @@ audio {
 
 .btn-icon {
   font-size: 16px;
+}
+
+/* =====================
+   description
+   ===================== */
+.place-popup {
+  width: 260px;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+
+.place-popup h3 {
+  margin-bottom: 10px;
+  font-family: 'Noto Serif TC', serif;
+  color: var(--red-dark);
+  text-align: center;
+}
+
+.photo-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.photo-tabs button {
+  padding: 4px 12px;
+  border: 1px solid var(--gold-deep);
+  border-radius: 999px;
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.photo-tabs button:hover {
+  background: var(--gold-light);
+}
+
+.photo-title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.popup-photo {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--gold-deep);
+}
+
+.popup-info {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.popup-info p {
+  margin-bottom: 6px;
 }
 
 /* =====================

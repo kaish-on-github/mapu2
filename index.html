@@ -24,7 +24,7 @@
       <span class="subtitle-text">穿越時光・尋訪神祇</span>
       <span class="line-deco"></span>
     </div>
-    <p class="header-desc">來看看不同的年份裡，我們有哪些廟宇吧～　可選年份範圍：1701 ~ 2026</p>
+    <p class="header-desc">以下36個神社，你曾經去過幾個？</p>
   </header>
 
   <div class="audio_wrapper">
@@ -36,17 +36,24 @@
 
   <div class="controls_wrapper">
     <div id="controls">
-      <div class="controls-inner">
-        <div class="year-control-row">
-          <label class="year-label">查找年份</label>
-          <input type="range" id="yearSlider" min="1701" max="2026" value="2026">
-          <span id="yearText" class="year-display">2026</span>
-          <input type="number" id="yearInput" min="1701" max="2026" value="2026">
-        </div>
+      <div class="controls-inner">        
         <div class="count-row">
-          <div class="count-chip shrine"><span class="count-icon">⛩</span><span id="sirCount">神社：0</span></div>
-          <div class="count-chip jingu"><span class="count-icon">🏯</span><span id="gongCount">教堂：0</span></div>
-          <div class="count-chip temple"><span class="count-icon">🏮</span><span id="meowCount">寺廟：0</span></div>
+
+          <button class="count-chip guan" id="showGuan">
+            <span class="count-icon">🏯</span>
+            <span id="guanCount">官社：0</span>
+          </button>
+
+          <button class="count-chip xian" id="showXian">
+            <span class="count-icon">⛩</span>
+            <span id="xianCount">縣社：0</span>
+          </button>
+
+          <button class="count-chip xiang" id="showXiang">
+            <span class="count-icon">🏮</span>
+            <span id="xiangCount">鄉社：0</span>
+          </button>  
+
         </div>
       </div>
     </div>
@@ -54,7 +61,7 @@
 
   <div class="button_wrapper">
     <button id="viewAll">
-      <span class="btn-icon">⊕</span> 顯示全部廟宇
+      <span class="btn-icon">⊕</span> 顯示全部神社
     </button>
   </div>
 
