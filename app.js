@@ -1,69 +1,18 @@
 /**
- * app.js — 集章圖鑑主程式
- *
- * 功能：
- *   - 圖鑑展示（鎖定 / 解鎖狀態）
- *   - GPS 打卡（Haversine 距離判定）
- *   - 已集章記錄存入 localStorage
- *   - Modal 詳細資訊
+ * app.js — 集章圖鑑主程式（Firebase 版）
+ * 打卡記錄存 Firestore，不再用 localStorage
  */
 
-/* ==========================================
-   常數
-   ========================================== */
+const STORAGE_KEY = 'temple_stamps_collected'; // 保留備用，實際不用
 
-const STORAGE_KEY = 'temple_stamps_collected';
-
-/* ==========================================
-   狀態
-   ========================================== */
-
-/** @type {Set<number>} 已收集的景點 ID */
-let collected = loadCollected();
-
-/** @type {number|null} 目前 GPS 緯度 */
-let currentLat = null;
-
-/** @type {number|null} 目前 GPS 經度 */
-let currentLng = null;
-
-/* ==========================================
-   localStorage 讀寫
-   ========================================== */
-
-/**
- * 從 localStorage 讀取已集章 ID，回傳 Set
- * @returns {Set<number>}
- */
-function loadCollected() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return new Set();
-    const arr = JSON.parse(raw);
-    return new Set(Array.isArray(arr) ? arr.map(Number) : []);
-  } catch {
-    return new Set();
-  }
-}
-
-/**
- * 將已集章 ID 寫入 localStorage
- */
-function saveCollected() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...collected]));
-  } catch (e) {
-    console.warn('localStorage 寫入失敗', e);
-  }
-}
+// collected 和 saveCollected 由 firebase.js 注入
+// 這裡給預設值避免載入競爭問題
+if (!window.collected) window.collected = new Set();
 
 /* ==========================================
    工具函式
    ========================================== */
 
-/**
- * Haversine 公式計算兩點地面距離（公尺）
- */
 function haversine(lat1, lng1, lat2, lng2) {
   const R = 6371000;
   const toRad = (d) => (d * Math.PI) / 180;
@@ -75,29 +24,15 @@ function haversine(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/**
- * 找出距離目前位置最近的景點
- * @returns {{ spot: object, dist: number }}
- */
 function findNearest(lat, lng) {
-  let best = null;
-  let bestDist = Infinity;
+  let best = null, bestDist = Infinity;
   for (const spot of SPOTS) {
     const d = haversine(lat, lng, spot.lat, spot.lng);
-    if (d < bestDist) {
-      bestDist = d;
-      best = spot;
-    }
+    if (d < bestDist) { bestDist = d; best = spot; }
   }
   return { spot: best, dist: bestDist };
 }
 
-/**
- * 建立章的圖片元素（img 或 emoji fallback）
- * @param {object} spot
- * @param {boolean} locked  - 是否灰階鎖定
- * @returns {string} HTML string
- */
 function buildImgHTML(spot, locked) {
   const lockClass = locked ? 'locked' : 'collected';
   if (spot.image) {
@@ -116,10 +51,11 @@ function buildImgHTML(spot, locked) {
 
 function renderGallery() {
   const grid = document.getElementById('gallery-grid');
+  if (!grid) return;
   grid.innerHTML = '';
 
   for (const spot of SPOTS) {
-    const ok = collected.has(spot.id);
+    const ok = window.collected.has(spot.id);
     const card = document.createElement('div');
     card.className = `stamp-card${ok ? ' is-collected' : ''}`;
     card.setAttribute('role', 'button');
@@ -150,9 +86,10 @@ function renderGallery() {
 function renderCollected() {
   const grid = document.getElementById('collected-grid');
   const empty = document.getElementById('collected-empty');
+  if (!grid) return;
   grid.innerHTML = '';
 
-  const list = SPOTS.filter((s) => collected.has(s.id));
+  const list = SPOTS.filter((s) => window.collected.has(s.id));
 
   if (list.length === 0) {
     empty.style.display = 'block';
@@ -165,16 +102,12 @@ function renderCollected() {
     card.className = 'stamp-card is-collected';
     card.setAttribute('role', 'button');
     card.setAttribute('tabindex', '0');
-    card.setAttribute('aria-label', spot.name);
     card.innerHTML = `
       ${buildImgHTML(spot, false)}
       <div class="stamp-name">${spot.name}</div>
       <div class="stamp-city">${spot.city}</div>
     `;
     card.addEventListener('click', () => openModal(spot));
-    card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') openModal(spot);
-    });
     grid.appendChild(card);
   }
 }
@@ -184,7 +117,7 @@ function renderCollected() {
    ========================================== */
 
 function updateProgress() {
-  const n = collected.size;
+  const n = window.collected.size;
   const total = SPOTS.length;
   const pct = total > 0 ? (n / total) * 100 : 0;
 
@@ -202,18 +135,13 @@ function updateProgress() {
    ========================================== */
 
 function switchTab(tabName) {
-  // 更新按鈕狀態
   document.querySelectorAll('.tab').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.tab === tabName);
   });
-
-  // 切換 section
   document.querySelectorAll('.section').forEach((sec) => {
     sec.classList.remove('active');
   });
   document.getElementById('tab-' + tabName).classList.add('active');
-
-  // 切到已集章時才重繪（避免每次都跑）
   if (tabName === 'collected') renderCollected();
 }
 
@@ -237,16 +165,16 @@ function checkLocation() {
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      currentLat = pos.coords.latitude;
-      currentLng = pos.coords.longitude;
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
 
-      document.getElementById('lat-val').textContent = currentLat.toFixed(5);
-      document.getElementById('lng-val').textContent = currentLng.toFixed(5);
+      document.getElementById('lat-val').textContent = lat.toFixed(5);
+      document.getElementById('lng-val').textContent = lng.toFixed(5);
       dot.className = 'status-dot active';
       txt.textContent = '定位成功';
       btn.disabled = false;
 
-      processCheckIn(currentLat, currentLng);
+      processCheckIn(lat, lng);
     },
     (err) => {
       showGpsError('無法取得位置：' + err.message);
@@ -256,26 +184,25 @@ function checkLocation() {
   );
 }
 
-function processCheckIn(lat, lng) {
+async function processCheckIn(lat, lng) {
   const { spot, dist } = findNearest(lat, lng);
 
-  // 顯示最近景點
   const nearestBox = document.getElementById('nearest-box');
   nearestBox.style.display = 'block';
   document.getElementById('nearest-name').textContent = spot.name + ' ' + spot.emoji;
   document.getElementById('nearest-dist').textContent = '距離 ' + Math.round(dist) + ' 公尺';
 
-  // 判定結果
   const banner = document.getElementById('result-banner');
   banner.style.display = 'block';
 
   if (dist <= spot.radius) {
-    if (collected.has(spot.id)) {
+    if (window.collected.has(spot.id)) {
       banner.className = 'result-banner result-already';
       banner.textContent = '你已經集過「' + spot.name + '」的章囉！';
     } else {
-      collected.add(spot.id);
-      saveCollected();
+      window.collected.add(spot.id);
+      // 存到 Firestore
+      if (window.saveCollected) await window.saveCollected();
       renderGallery();
       banner.className = 'result-banner result-success';
       banner.textContent = '🎉 恭喜！成功集到「' + spot.name + '」的章！';
@@ -288,10 +215,8 @@ function processCheckIn(lat, lng) {
 }
 
 function showGpsError(msg) {
-  const dot = document.getElementById('status-dot');
-  const txt = document.getElementById('status-text');
-  dot.className = 'status-dot error';
-  txt.textContent = msg;
+  document.getElementById('status-dot').className = 'status-dot error';
+  document.getElementById('status-text').textContent = msg;
 }
 
 /* ==========================================
@@ -299,33 +224,26 @@ function showGpsError(msg) {
    ========================================== */
 
 function openModal(spot) {
-  const ok = collected.has(spot.id);
+  const ok = window.collected.has(spot.id);
 
-  // 圖片
   const imgEl = document.getElementById('modal-img');
   if (spot.image) {
     imgEl.innerHTML = `<img src="${spot.image}" alt="${spot.name}的章" style="${ok ? '' : 'filter:grayscale(1);opacity:.5'}" />`;
   } else {
-    imgEl.style.filter = ok ? '' : 'grayscale(1) opacity(.5)';
     imgEl.innerHTML = `<span aria-hidden="true">${spot.emoji}</span>`;
   }
 
   document.getElementById('modal-title').textContent = spot.name;
   document.getElementById('modal-sub').textContent =
     spot.city + '｜打卡半徑 ' + spot.radius + ' 公尺';
-
-  const periodEl = document.getElementById('modal-period');
-  periodEl.textContent = spot.period ? '📅 ' + spot.period : '';
+  document.getElementById('modal-period').textContent = spot.period ? '📅 ' + spot.period : '';
 
   const statusEl = document.getElementById('modal-status');
   statusEl.textContent = ok ? '✓ 已集章' : '尚未集章';
   statusEl.className = 'modal-status ' + (ok ? 'collected' : 'not-collected');
 
-  const descEl = document.getElementById('modal-desc');
-  descEl.textContent = spot.description || '';
-
+  document.getElementById('modal-desc').textContent = spot.description || '';
   document.getElementById('modal').classList.add('open');
-  document.getElementById('modal').focus();
 }
 
 function closeModal() {
@@ -336,16 +254,6 @@ function closeModalOverlay(e) {
   if (e.target === document.getElementById('modal')) closeModal();
 }
 
-// ESC 鍵關閉 Modal
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
-});
-
-/* ==========================================
-   初始化 — 等待 CSV 載入完成後才渲染
-   ========================================== */
-
-spotsReady.then(() => {
-  document.getElementById('prog-bar-aria').setAttribute('aria-valuemax', SPOTS.length);
-  renderGallery();
 });

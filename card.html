@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>台灣神社集章圖鑑</title>
+  <title>台灣廟宇集章圖鑑</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet" />
@@ -13,21 +13,42 @@
 
   <header class="site-header">
     <div class="header-inner">
-      <a href="index.html" class="back-btn" aria-label="返回神社地圖">← 地圖</a>
+      <a href="index.html" class="back-btn" aria-label="返回廟宇地圖">← 地圖</a>
       <div class="header-icon" aria-hidden="true">⛩️</div>
       <div>
-        <h1 class="site-title">台灣神社集章圖鑑</h1>
-        <p class="site-sub">走訪神社，集齊印章</p>
+        <h1 class="site-title">台灣廟宇集章圖鑑</h1>
+        <p class="site-sub">走訪廟宇，集齊印章</p>
       </div>
     </div>
   </header>
 
-  <main class="app">
+  <!-- 登入畫面 -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <div class="login-icon">⛩️</div>
+      <h2 class="login-title">台灣廟宇集章圖鑑</h2>
+      <p class="login-desc">登入後，你的集章記錄將永久保存<br>並且只有你看得到</p>
+      <button id="google-login-btn" class="google-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" />
+        使用 Google 登入
+      </button>
+    </div>
+  </div>
+
+  <!-- 主應用（登入後才顯示） -->
+  <main class="app" id="main-app" style="display:none">
+
+    <!-- 使用者資訊列 -->
+    <div class="user-bar">
+      <img id="user-avatar" class="user-avatar" src="" alt="" />
+      <span id="user-name" class="user-name"></span>
+      <button id="logout-btn" class="logout-btn">登出</button>
+    </div>
 
     <!-- 進度條 -->
     <section class="progress-section" aria-label="集章進度">
-      <p class="progress-label">已集章 <strong id="prog-count">0</strong> / <span id="prog-total">13</span></p>
-      <div class="progress-bar-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" id="prog-bar-aria">
+      <p class="progress-label">已集章 <strong id="prog-count">0</strong> / <span id="prog-total">0</span></p>
+      <div class="progress-bar-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" id="prog-bar-aria">
         <div class="progress-bar" id="prog-bar"></div>
       </div>
     </section>
@@ -97,6 +118,8 @@
     </div>
   </div>
 
+  <!-- Firebase SDK -->
+  <script type="module" src="firebase.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
