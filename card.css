@@ -943,6 +943,7 @@ audio {
 }
 
 .result-banner {
+  white-space: pre-line;
   margin-top: 1rem;
   padding: 14px 16px;
   border-radius: 8px;
@@ -1189,15 +1190,23 @@ audio {
 
 
 /* ==========================================
-   Modal 劇情按鈕
+   Modal 劇情章節
    ========================================== */
+.modal-stories {
+  margin-bottom: 12px;
+  padding-top: 10px;
+  border-top: 0.5px solid var(--gold-deep);
+}
 .modal-story-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   width: 100%;
-  margin-bottom: 10px;
-  padding: 10px;
+  margin-bottom: 6px;
+  padding: 9px 12px;
   background: var(--red-dark);
   color: var(--gold);
-  border: 1.5px solid var(--red-dark);
+  border: none;
   border-radius: 8px;
   font-family: 'Noto Serif TC', serif;
   font-size: 14px;
@@ -1205,12 +1214,15 @@ audio {
   cursor: pointer;
   transition: background 0.15s;
 }
-.modal-story-btn:hover:not(:disabled) { background: var(--red-mid); }
-.modal-story-btn:disabled {
-  background: transparent;
-  color: var(--ink-light);
+.modal-story-btn:hover { background: var(--red-mid); }
+.modal-story-btn small { font-size: 11px; opacity: 0.75; }
+.modal-story-hint {
+  padding: 8px 10px;
   border: 1.5px dashed var(--gold-deep);
-  cursor: not-allowed;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-light);
 }
 
 /* ==========================================

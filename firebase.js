@@ -50,6 +50,7 @@ onAuthStateChanged(auth, async (user) => {
     // 把記錄傳給 app.js
     window._firebaseUser = user;
     window._collectedIds = new Set((data.collected || []).map(Number));
+    window.unlockedStories = new Map(Object.entries(data.stories || {}));
 
     // 等 SPOTS 資料準備好再渲染
     spotsReady.then(() => {
@@ -69,5 +70,8 @@ window.saveCollected = async function() {
   const user = window._firebaseUser;
   if (!user) return;
   const ref = doc(db, 'users', user.uid);
-  await setDoc(ref, { collected: [...window.collected] }, { merge: true });
+  await setDoc(ref, {
+    collected: [...window.collected],
+    stories: Object.fromEntries(window.unlockedStories || []),
+  }, { merge: true });
 };

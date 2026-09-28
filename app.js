@@ -4,6 +4,7 @@
  */
 
 if (!window.collected) window.collected = new Set();
+if (!window.unlockedStories) window.unlockedStories = new Map(); // key → 解鎖日期 'YYYY-M-D'
 
 let currentFilter = 'all'; // 'all' | '官社' | '縣社' | '鄉社'
 
@@ -221,19 +222,33 @@ async function processCheckIn(lat, lng) {
   banner.style.display = 'block';
 
   if (dist <= spot.radius) {
-    if (window.collected.has(spot.id)) {
-      banner.className = 'result-banner result-already';
-      banner.textContent = '你已經集過「' + spot.name + '」的章囉！';
-    } else {
-      window.collected.add(spot.id);
-      if (window.saveCollected) await window.saveCollected();
-      renderGallery();
+    const isNew = !window.collected.has(spot.id);
+    if (isNew) window.collected.add(spot.id);
+
+    // 看看今天這裡有沒有劇情
+    const date = getStoryDate();
+    const variant = pickStoryVariant(spot.id, date, window.unlockedStories);
+    const key = variant && storyKey(spot.id, variant);
+    const storyIsNew = !!variant && !window.unlockedStories.has(key);
+    if (storyIsNew) window.unlockedStories.set(key, toDateKey(date));
+
+    if ((isNew || storyIsNew) && window.saveCollected) await window.saveCollected();
+    if (isNew) renderGallery();
+
+    if (isNew) {
       banner.className = 'result-banner result-success';
       banner.textContent = '🎉 恭喜！成功集到「' + spot.name + '」的章！';
-
-      // ★ 集章成功 → 播放該地點的劇情
-      openStory(spot, true);
+    } else {
+      banner.className = 'result-banner result-already';
+      banner.textContent = '你已經集過「' + spot.name + '」的章囉！';
     }
+    if (storyIsNew) {
+      banner.textContent += '\n📜 解鎖新劇情「' + variant.title + '」';
+    } else if (!variant && getStoryVariants(spot.id).length) {
+      banner.textContent += '\n今天這裡很安靜。換個日子再來看看吧。';
+    }
+
+    if (variant) openStory(spot, variant, { justUnlocked: storyIsNew, date });
   } else {
     banner.className = 'result-banner result-fail';
     banner.textContent =
@@ -276,17 +291,42 @@ function openModal(spot) {
   // 預設顯示過去圖片
   showModalPhoto('past');
 
-  // 劇情按鈕：有劇情才顯示，未集章時鎖住
-  const storyBtn = document.getElementById('modal-story-btn');
-  if (getStory(spot.id)) {
-    storyBtn.style.display = 'block';
-    storyBtn.disabled = !ok;
-    storyBtn.textContent = ok ? '📜 觀看劇情' : '🔒 集章後解鎖劇情';
-  } else {
-    storyBtn.style.display = 'none';
-  }
+  renderModalStories(spot);
 
   document.getElementById('modal').classList.add('open');
+}
+
+// Modal 裡的劇情章節列表
+function renderModalStories(spot) {
+  const box = document.getElementById('modal-stories');
+  const variants = getStoryVariants(spot.id);
+  box.innerHTML = '';
+  if (!variants.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+
+  const unlocked = variants.filter(v => window.unlockedStories.has(storyKey(spot.id, v)));
+  const lockedCount = variants.length - unlocked.length;
+
+  for (const v of unlocked) {
+    const d = fromDateKey(window.unlockedStories.get(storyKey(spot.id, v)));
+    const btn = document.createElement('button');
+    btn.className = 'modal-story-btn';
+    btn.textContent = `📜 ${v.title}`;
+    const small = document.createElement('small');
+    small.textContent = `${d.getMonth() + 1}/${d.getDate()}`;
+    btn.appendChild(small);
+    btn.addEventListener('click', () => openStory(spot, v, { date: d }));
+    box.appendChild(btn);
+  }
+
+  if (lockedCount > 0) {
+    const hint = document.createElement('div');
+    hint.className = 'modal-story-hint';
+    hint.textContent = unlocked.length
+      ? `還有 ${lockedCount} 段劇情，要在特別的日子來才聽得到。`
+      : `🔒 這裡有 ${lockedCount} 段劇情，在特別的日子親自前來就能解鎖。`;
+    box.appendChild(hint);
+  }
 }
 
 function showModalPhoto(mode) {
@@ -340,22 +380,40 @@ document.addEventListener('keydown', (e) => {
    劇情播放器
    ========================================== */
 
-let storyState = null; // { spot, story, index, typing, timer, full }
+let storyState = null; // { spot, variant, date, index, typing, timer, full }
 const REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPE_SPEED = 40; // 每個字的毫秒數
 
-function openStory(spot, justUnlocked = false) {
-  const story = getStory(spot.id);
-  if (!story) return false;
+// 每一句可以是字串或物件，統一轉成物件
+function normLine(line, variant) {
+  if (typeof line === 'string') return { speaker: variant.speaker || '', text: line };
+  return { speaker: line.speaker ?? variant.speaker ?? '', text: line.text || '', image: line.image };
+}
 
-  storyState = { spot, story, index: 0, typing: false, timer: null, full: '' };
+function fillText(text, date) {
+  return text.replace(/\{month\}/g, CN_MONTHS[date.getMonth()]);
+}
 
-  document.getElementById('story-title').textContent = story.title || spot.name;
+function resolveImage(img, spot) {
+  if (img === 'past') return spot.imagePast;
+  if (img === 'now') return spot.imageNow;
+  return img;
+}
 
-  // 剛集章時蓋一個「解鎖」印
+function openStory(spot, variant, opts = {}) {
+  if (!variant) return false;
+  storyState = {
+    spot, variant,
+    date: opts.date || getStoryDate(),
+    index: 0, typing: false, timer: null, full: '',
+  };
+
+  document.getElementById('story-title').textContent = `${spot.name}｜${variant.title}`;
+
+  // 剛解鎖時蓋一個「解鎖」印
   const seal = document.getElementById('story-seal');
   seal.classList.remove('show');
-  if (justUnlocked) { void seal.offsetWidth; seal.classList.add('show'); }
+  if (opts.justUnlocked) { void seal.offsetWidth; seal.classList.add('show'); }
 
   const overlay = document.getElementById('story');
   overlay.classList.add('open');
@@ -366,37 +424,33 @@ function openStory(spot, justUnlocked = false) {
   return true;
 }
 
-function openStoryFromModal() {
-  if (currentModalSpot && window.collected.has(currentModalSpot.id)) {
-    openStory(currentModalSpot);
-  }
-}
-
-// 往回找最近一張指定的背景圖，找不到就用預設
+// 往回找最近一張指定的背景圖，找不到就用過去照片
 function storyBgAt(index) {
-  const { story, spot } = storyState;
+  const { variant, spot } = storyState;
   for (let i = index; i >= 0; i--) {
-    if (story.lines[i].image) return story.lines[i].image;
+    const l = variant.lines[i];
+    if (typeof l === 'object' && l.image) return resolveImage(l.image, spot);
   }
-  return story.background || spot.imagePast;
+  return resolveImage(variant.background || 'past', spot);
 }
 
 function renderStoryLine() {
-  const { story, index } = storyState;
-  const line = story.lines[index];
+  const { variant, index, date } = storyState;
+  const line = normLine(variant.lines[index], variant);
+  const total = variant.lines.length;
 
   const speaker = document.getElementById('story-speaker');
-  speaker.textContent = line.speaker || '';
+  speaker.textContent = line.speaker;
   speaker.style.visibility = line.speaker ? 'visible' : 'hidden';
   document.getElementById('story-text').classList.toggle('narration', !line.speaker);
 
-  document.getElementById('story-page').textContent = `${index + 1} / ${story.lines.length}`;
+  document.getElementById('story-page').textContent = `${index + 1} / ${total}`;
   document.getElementById('story-prev').disabled = index === 0;
   document.getElementById('story-next-hint').textContent =
-    index === story.lines.length - 1 ? '點擊結束 ■' : '點擊繼續 ▼';
+    index === total - 1 ? '點擊結束 ■' : '點擊繼續 ▼';
   document.getElementById('story-bg').style.backgroundImage = `url("${storyBgAt(index)}")`;
 
-  typeText(line.text || '');
+  typeText(fillText(line.text, date));
 }
 
 function typeText(text) {
@@ -433,7 +487,7 @@ function advanceStory() {
     document.getElementById('story-text').textContent = storyState.full;
     return;
   }
-  if (storyState.index >= storyState.story.lines.length - 1) {
+  if (storyState.index >= storyState.variant.lines.length - 1) {
     closeStory();
     return;
   }
@@ -449,10 +503,13 @@ function prevStory() {
 
 function closeStory() {
   if (!storyState) return;
+  const spot = storyState.spot;
   clearInterval(storyState.timer);
   storyState = null;
   const overlay = document.getElementById('story');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
   document.getElementById('story-seal').classList.remove('show');
+  // 如果 Modal 開著，刷新章節列表
+  if (currentModalSpot && currentModalSpot.id === spot.id) renderModalStories(spot);
 }
