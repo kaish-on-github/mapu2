@@ -132,12 +132,36 @@
       <div class="modal-period" id="modal-period"></div>
       <div class="modal-status" id="modal-status"></div>
       <div class="modal-desc" id="modal-desc"></div>
+      <!-- 劇情按鈕（有劇情的神社才顯示；未集章時為鎖定狀態） -->
+      <button class="modal-story-btn" id="modal-story-btn" onclick="openStoryFromModal()" style="display:none"></button>
       <button class="modal-close" onclick="closeModal()">關閉</button>
+    </div>
+  </div>
+
+  <!-- 劇情播放器 -->
+  <div class="story-overlay" id="story" aria-hidden="true" role="dialog" aria-label="劇情">
+    <div class="story-stage">
+      <div class="story-bg" id="story-bg"></div>
+      <div class="story-head">
+        <span class="story-chapter" id="story-title"></span>
+        <button class="story-skip" onclick="closeStory()">略過 ✕</button>
+      </div>
+      <div class="story-seal" id="story-seal" aria-hidden="true">解鎖</div>
+      <div class="story-box" id="story-box" tabindex="0" onclick="advanceStory()">
+        <div class="story-speaker" id="story-speaker"></div>
+        <p class="story-text" id="story-text" aria-live="polite"></p>
+        <div class="story-controls">
+          <button class="story-prev" id="story-prev" onclick="event.stopPropagation(); prevStory()">上一句</button>
+          <span id="story-page"></span>
+          <span class="story-next-hint" id="story-next-hint">點擊繼續 ▼</span>
+        </div>
+      </div>
     </div>
   </div>
 
   <script type="module" src="firebase.js"></script>
   <script src="data.js"></script>
+  <script src="story.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

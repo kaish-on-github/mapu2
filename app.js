@@ -230,6 +230,9 @@ async function processCheckIn(lat, lng) {
       renderGallery();
       banner.className = 'result-banner result-success';
       banner.textContent = '🎉 恭喜！成功集到「' + spot.name + '」的章！';
+
+      // ★ 集章成功 → 播放該地點的劇情
+      openStory(spot, true);
     }
   } else {
     banner.className = 'result-banner result-fail';
@@ -273,6 +276,16 @@ function openModal(spot) {
   // 預設顯示過去圖片
   showModalPhoto('past');
 
+  // 劇情按鈕：有劇情才顯示，未集章時鎖住
+  const storyBtn = document.getElementById('modal-story-btn');
+  if (getStory(spot.id)) {
+    storyBtn.style.display = 'block';
+    storyBtn.disabled = !ok;
+    storyBtn.textContent = ok ? '📜 觀看劇情' : '🔒 集章後解鎖劇情';
+  } else {
+    storyBtn.style.display = 'none';
+  }
+
   document.getElementById('modal').classList.add('open');
 }
 
@@ -310,5 +323,136 @@ function closeModalOverlay(e) {
 }
 
 document.addEventListener('keydown', (e) => {
+  // 劇情開著時，鍵盤只操作劇情
+  if (storyState) {
+    if (e.key === 'Escape') closeStory();
+    else if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') advanceStory();
+    else if (e.key === 'ArrowLeft') prevStory();
+    else return;
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
   if (e.key === 'Escape') closeModal();
-});
+}, true);
+
+/* ==========================================
+   劇情播放器
+   ========================================== */
+
+let storyState = null; // { spot, story, index, typing, timer, full }
+const REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TYPE_SPEED = 40; // 每個字的毫秒數
+
+function openStory(spot, justUnlocked = false) {
+  const story = getStory(spot.id);
+  if (!story) return false;
+
+  storyState = { spot, story, index: 0, typing: false, timer: null, full: '' };
+
+  document.getElementById('story-title').textContent = story.title || spot.name;
+
+  // 剛集章時蓋一個「解鎖」印
+  const seal = document.getElementById('story-seal');
+  seal.classList.remove('show');
+  if (justUnlocked) { void seal.offsetWidth; seal.classList.add('show'); }
+
+  const overlay = document.getElementById('story');
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.getElementById('story-box').focus();
+
+  renderStoryLine();
+  return true;
+}
+
+function openStoryFromModal() {
+  if (currentModalSpot && window.collected.has(currentModalSpot.id)) {
+    openStory(currentModalSpot);
+  }
+}
+
+// 往回找最近一張指定的背景圖，找不到就用預設
+function storyBgAt(index) {
+  const { story, spot } = storyState;
+  for (let i = index; i >= 0; i--) {
+    if (story.lines[i].image) return story.lines[i].image;
+  }
+  return story.background || spot.imagePast;
+}
+
+function renderStoryLine() {
+  const { story, index } = storyState;
+  const line = story.lines[index];
+
+  const speaker = document.getElementById('story-speaker');
+  speaker.textContent = line.speaker || '';
+  speaker.style.visibility = line.speaker ? 'visible' : 'hidden';
+  document.getElementById('story-text').classList.toggle('narration', !line.speaker);
+
+  document.getElementById('story-page').textContent = `${index + 1} / ${story.lines.length}`;
+  document.getElementById('story-prev').disabled = index === 0;
+  document.getElementById('story-next-hint').textContent =
+    index === story.lines.length - 1 ? '點擊結束 ■' : '點擊繼續 ▼';
+  document.getElementById('story-bg').style.backgroundImage = `url("${storyBgAt(index)}")`;
+
+  typeText(line.text || '');
+}
+
+function typeText(text) {
+  const el = document.getElementById('story-text');
+  clearInterval(storyState.timer);
+  storyState.full = text;
+
+  if (REDUCE_MOTION) {
+    el.textContent = text;
+    storyState.typing = false;
+    return;
+  }
+
+  const chars = Array.from(text); // 避免 emoji 被切一半
+  let i = 0;
+  el.textContent = '';
+  storyState.typing = true;
+  storyState.timer = setInterval(() => {
+    i++;
+    el.textContent = chars.slice(0, i).join('');
+    if (i >= chars.length) {
+      clearInterval(storyState.timer);
+      storyState.typing = false;
+    }
+  }, TYPE_SPEED);
+}
+
+function advanceStory() {
+  if (!storyState) return;
+  // 還在打字 → 先把這句顯示完整
+  if (storyState.typing) {
+    clearInterval(storyState.timer);
+    storyState.typing = false;
+    document.getElementById('story-text').textContent = storyState.full;
+    return;
+  }
+  if (storyState.index >= storyState.story.lines.length - 1) {
+    closeStory();
+    return;
+  }
+  storyState.index++;
+  renderStoryLine();
+}
+
+function prevStory() {
+  if (!storyState || storyState.index === 0) return;
+  storyState.index--;
+  renderStoryLine();
+}
+
+function closeStory() {
+  if (!storyState) return;
+  clearInterval(storyState.timer);
+  storyState = null;
+  const overlay = document.getElementById('story');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  document.getElementById('story-seal').classList.remove('show');
+}

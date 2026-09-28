@@ -1186,3 +1186,216 @@ audio {
   text-align: center;
   margin-bottom: 4px;
 }
+
+
+/* ==========================================
+   Modal 劇情按鈕
+   ========================================== */
+.modal-story-btn {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  background: var(--red-dark);
+  color: var(--gold);
+  border: 1.5px solid var(--red-dark);
+  border-radius: 8px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.modal-story-btn:hover:not(:disabled) { background: var(--red-mid); }
+.modal-story-btn:disabled {
+  background: transparent;
+  color: var(--ink-light);
+  border: 1.5px dashed var(--gold-deep);
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   劇情播放器
+   ========================================== */
+.story-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000; /* 蓋在 modal (999) 之上 */
+  background: rgba(28, 10, 6, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.story-overlay.open { opacity: 1; pointer-events: auto; }
+
+.story-stage {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  height: min(82vh, 560px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #2a120b;
+  border: 2px solid var(--gold-deep);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* 背景：老照片感 */
+.story-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: sepia(0.35) brightness(0.8);
+}
+.story-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(0,0,0,0.35) 0%, transparent 28%, transparent 45%, rgba(28,10,6,0.88) 100%);
+}
+
+.story-head {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+}
+.story-chapter {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+}
+.story-skip {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(227,194,151,0.5);
+  color: var(--gold-light);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: 'Noto Serif TC', serif;
+  cursor: pointer;
+}
+.story-skip:hover { background: rgba(0,0,0,0.55); }
+
+/* 「解鎖」朱印：集章成功時蓋下去 */
+.story-seal {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  width: 88px;
+  height: 88px;
+  margin-left: -44px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.1em;
+  color: var(--cream);
+  background: var(--red-mid);
+  border: 3px double var(--cream);
+  border-radius: 6px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+.story-seal.show {
+  display: flex;
+  animation:
+    seal-press 0.5s cubic-bezier(.2, 1.4, .4, 1) both,
+    seal-fade 0.6s ease 2.2s forwards;
+}
+@keyframes seal-press {
+  from { transform: rotate(-20deg) scale(1.8); opacity: 0; }
+  to   { transform: rotate(-8deg)  scale(1);   opacity: 0.95; }
+}
+@keyframes seal-fade { to { opacity: 0; } }
+
+/* 對話框 */
+.story-box {
+  position: relative;
+  margin: 0 12px 12px;
+  min-height: 150px;
+  padding: 24px 18px 12px;
+  background: rgba(253, 246, 233, 0.96);
+  border: 1.5px solid var(--gold-deep);
+  border-top: 3px solid var(--red-dark);
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+}
+.story-box:focus-visible { box-shadow: 0 0 0 3px var(--gold); }
+
+.story-speaker {
+  position: absolute;
+  top: -15px;
+  left: 16px;
+  padding: 4px 14px;
+  background: var(--red-dark);
+  color: var(--gold);
+  border: 1px solid var(--gold-deep);
+  border-radius: 4px;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+}
+
+.story-text {
+  min-height: 3.8em;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+.story-text.narration { color: var(--ink-light); }
+
+.story-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ink-light);
+}
+.story-prev {
+  padding: 3px 12px;
+  background: transparent;
+  border: 1px solid var(--gold-deep);
+  border-radius: 20px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 12px;
+  color: var(--ink-light);
+  cursor: pointer;
+}
+.story-prev:disabled { opacity: 0.35; cursor: default; }
+.story-next-hint { animation: hint-bob 1.2s ease-in-out infinite; }
+@keyframes hint-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(3px); }
+}
+
+@media (max-width: 480px) {
+  .story-overlay { padding: 0; }
+  .story-stage { height: 100%; max-width: none; border: none; border-radius: 0; }
+  .story-text { font-size: 15px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-seal.show { animation: none; opacity: 0.95; }
+  .story-next-hint { animation: none; }
+}
